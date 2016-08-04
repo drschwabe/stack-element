@@ -1,0 +1,11 @@
+{
+  "name": "command-stack-element",
+  "version": "0.0.1",
+  "description": "Modular DOM elements that incrementally construct via middleware pattern.",
+  "main": "command-stack-element.js",
+  "author": "Derrick Schwabe",
+  "dependencies": {
+    "async": "^2.0.1",
+    "underscore": "^1.8.3"
+  }
+}
