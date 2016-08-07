@@ -1,6 +1,8 @@
 var _ = require('underscore'), 
     async = require('async')
 
+require('webcomponentsjs-custom-element-v1')
+
 var cse = {}
 
 //Listener (blueprint for how to build the element;
@@ -12,10 +14,24 @@ cse.elements = []
 cse.listen = function(elementName, callback) {
   var existingElement = _.findWhere(this.elements, { name: elementName })
 
+
+
   //Determine if the route already exists:
   if(!existingElement) {
+
+    //Establish the base element: 
+    window.customElements.define(elementName, class extends HTMLElement {
+      constructor() {
+        super()
+        this.addEventListener('click', e => {
+          console.log(e)
+        })
+      }
+    })
+    baseElement = document.createElement(elementName)
+
     //Make an entry for it; add to known elements and define middleware array/stack:
-    this.elements.push({ middleware : [callback], name: elementName })
+    this.elements.push({ middleware : [callback], name: elementName, element : baseElement })
   } else {
     //If the element already exists, just push the new middleware into the 
     //existing stack: 
