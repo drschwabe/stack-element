@@ -6,6 +6,7 @@
   "author": "Derrick Schwabe",
   "dependencies": {
     "async": "^2.0.1",
+    "ejs": "^2.5.1",
     "underscore": "^1.8.3",
     "webcomponentsjs-custom-element-v1": "^1.0.0"
   }
