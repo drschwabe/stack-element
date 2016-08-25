@@ -15,8 +15,9 @@ var cse = {  entries : [] }
 //or one page of a set of blueprints as other listeners may
 //be defined)
 cse.listen = function(elementName, callback) {
-  //Determine if the element already entered into the stack:   
-  var existingElement = _.find(this.entries, function(entry) { entry.element.name == elementName })
+
+  //Determine if the element already entered into the stack: 
+  var existingElement = _.find(this.entries, function(entry) { return entry.element.name == elementName })
 
   if(!existingElement) {
 
@@ -24,19 +25,22 @@ cse.listen = function(elementName, callback) {
     class newElement extends HTMLElement  {
       constructor() {
         super()
-        this.name = elementName        
         this.addEventListener('click', e => {
           console.log(e)
-          //fire the 'element-name/click' command. 
+          //fire the 'element-name/click' command...
+          cse.fire('m-button/click')
         })
+        this.name = elementName
+        this.template = '<? some EJS here ?>'
+        console.log(this.innerHTML)
       }
-      static get observedAttributes() { return ["data"] }
+      // static get observedAttributes() { return ["data"] }
 
-      attributeChangedCallback(name, oldValue, newValue) {
-        // name will always be "data" due to observedAttributes
-        this.data = newValue
-        this.render()
-      }
+      // attributeChangedCallback(name, oldValue, newValue) {
+      //   // name will always be "data" due to observedAttributes
+      //   this.data = newValue
+      //   this.render()
+      // }
 
       render() {
         //Render the element if it has a template: 
@@ -44,23 +48,22 @@ cse.listen = function(elementName, callback) {
         //   resultingElement.innerHTML = ejs.render(resultingElement.template, resultingElement.data)        
         // }
         console.log('render is called')
-        console.log(this.data)
-        var newData = this.data
-        debugger
+        this.innerHTML = 'wwwhooo hoo'
       }
 
       connectedCallback() {
-        console.log('connected')
+        //console.log('connected')
+        //This is how we can confirm when a given element is added to the DOM.
+        //At this point perhaps is when we populate the customEleemnt
       }
 
     }
 
     window.customElements.define(elementName, newElement)
-
-    baseElement = document.createElement(elementName)
+    var element = document.createElement(elementName)
 
     //Make an entry for it; add to known elements and define middleware array/stack:
-    this.entries.push({ middleware : [callback], element : baseElement })
+    this.entries.push({ middleware : [callback], element : element })
   } else {
     //If the element already exists, just push the new middleware into the 
     //existing stack: 
@@ -85,11 +88,14 @@ cse.fireAll = function(state, callback) {
     async.waterfall(middlewareToRun, function(err, state, resultingElement ) {
       if(err) return console.log(err)
 
-      //console.log(resultingElement.innerHTML)
+      console.log(resultingElement.innerHTML)
       //would like to call render here or do building stuff..
+      //Render the element: 
+      resultingElement.render()
 
       //Put back the resulting element so it's changes are retained for the next loop:  
       that.entries[index].element = resultingElement
+
       callback(null)
     })
   })
