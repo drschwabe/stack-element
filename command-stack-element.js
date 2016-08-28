@@ -30,25 +30,41 @@ cse.listen = function(elementName, callback) {
           //fire the 'element-name/click' command...
           cse.fire('m-button/click')
         })
-        this.name = elementName
-        this.template = '<? some EJS here ?>'
-        console.log(this.innerHTML)
+        this.name = elementName       
+        this._template = null
+        //this.template = 'replaceme'
+        //this.template = this.innerHTML
+        //console.log(this.innerHTML)
       }
       // static get observedAttributes() { return ["data"] }
+      static get observedAttributes() { return ['template'] }
 
-      // attributeChangedCallback(name, oldValue, newValue) {
-      //   // name will always be "data" due to observedAttributes
-      //   this.data = newValue
-      //   this.render()
-      // }
+      attributeChangedCallback(name, oldValue, newValue) {
+        // name will always be "template" due to observedAttributes
+        this._template = newValue
+        //this.render()
+      }
+
+      get template() {
+        return this._template;
+      }
+      set template(v) {
+        this.setAttribute('template', v);
+      } 
 
       render() {
         //Render the element if it has a template: 
         // if(resultingElement.template) {
         //   resultingElement.innerHTML = ejs.render(resultingElement.template, resultingElement.data)        
         // }
+        //console.log(this)
         console.log('render is called')
-        this.innerHTML = 'wwwhooo hoo'
+        //console.log(html)
+        //this.innerHTML = this.innerHTML
+        //console.log(this.innerHTML)
+        this.innerHTML = this._template
+        console.log(this.template2)
+        debugger
       }
 
       connectedCallback() {
@@ -56,10 +72,14 @@ cse.listen = function(elementName, callback) {
         //This is how we can confirm when a given element is added to the DOM.
         //At this point perhaps is when we populate the customEleemnt
       }
-
     }
 
     window.customElements.define(elementName, newElement)
+    // var element = {
+    //   name: elementName, 
+    //   DOM: document.createElement(elementName)
+    // }
+
     var element = document.createElement(elementName)
 
     //Make an entry for it; add to known elements and define middleware array/stack:
@@ -88,14 +108,16 @@ cse.fireAll = function(state, callback) {
     async.waterfall(middlewareToRun, function(err, state, resultingElement ) {
       if(err) return console.log(err)
 
-      console.log(resultingElement.innerHTML)
-      //would like to call render here or do building stuff..
-      //Render the element: 
-      resultingElement.render()
-
       //Put back the resulting element so it's changes are retained for the next loop:  
       that.entries[index].element = resultingElement
 
+      //Find existing instances of the element in the document
+      //and then call render on those
+      //so they can update based on the latest spec (resultingElement): 
+      var existingElements = document.querySelectorAll(entry.element.name)
+      existingElements.forEach(function(element){
+        element.render()
+      })
       callback(null)
     })
   })
