@@ -21,7 +21,7 @@ cse.listen = function(elementName, callback) {
 
   if(!existingElement) {
 
-    //Establish the base element:    HTMLAnchorElement
+    //Establish the base element: HTMLAnchorElement
     class newElement extends HTMLElement  {
       constructor() {
         super()
@@ -31,46 +31,10 @@ cse.listen = function(elementName, callback) {
           cse.fire('m-button/click')
         })
         this.name = elementName       
-        this._template = null
-        //this.template = 'replaceme'
-        //this.template = this.innerHTML
-        //console.log(this.innerHTML)
       }
-      // static get observedAttributes() { return ["data"] }
-      static get observedAttributes() { return ['template'] }
-
-      attributeChangedCallback(name, oldValue, newValue) {
-        // name will always be "template" due to observedAttributes
-        this._template = newValue
-        //this.render()
-      }
-
-      get template() {
-        return this._template;
-      }
-      set template(v) {
-        this.setAttribute('template', v);
-      } 
-
-      render() {
-        //Render the element if it has a template: 
-        // if(resultingElement.template) {
-        //   resultingElement.innerHTML = ejs.render(resultingElement.template, resultingElement.data)        
-        // }
-        //console.log(this)
-        console.log('render is called')
-        //console.log(html)
-        //this.innerHTML = this.innerHTML
-        //console.log(this.innerHTML)
-        this.innerHTML = this._template
-        console.log(this.template2)
-        debugger
-      }
-
       connectedCallback() {
         //console.log('connected')
         //This is how we can confirm when a given element is added to the DOM.
-        //At this point perhaps is when we populate the customEleemnt
       }
     }
 
@@ -80,7 +44,15 @@ cse.listen = function(elementName, callback) {
     //   DOM: document.createElement(elementName)
     // }
 
-    var element = document.createElement(elementName)
+    var element = {
+      name: elementName, 
+      DOM:document.createElement(elementName), 
+      template: 'test'
+      //middleware : [callback]
+      // render: function(state) {
+      //   this.DOM.innerHTML = ejs.render(template, {state: state});
+      // }
+    }
 
     //Make an entry for it; add to known elements and define middleware array/stack:
     this.entries.push({ middleware : [callback], element : element })
@@ -112,11 +84,11 @@ cse.fireAll = function(state, callback) {
       that.entries[index].element = resultingElement
 
       //Find existing instances of the element in the document
-      //and then call render on those
       //so they can update based on the latest spec (resultingElement): 
-      var existingElements = document.querySelectorAll(entry.element.name)
-      existingElements.forEach(function(element){
-        element.render()
+      var existingDOMelements = document.querySelectorAll(entry.element.name)
+      existingDOMelements.forEach(function(element){
+        //Render by updating innerHTML with EJS output: 
+        element.innerHTML = ejs.render(entry.element.template, { state: state })
       })
       callback(null)
     })
