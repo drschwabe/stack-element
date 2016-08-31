@@ -11,6 +11,19 @@ require('webcomponentsjs-custom-element-v1')
 //Store all elements here: 
 var cse = {  entries : [] }
 
+//Base model for the element: 
+cse.element = {
+  template : '', //< set on connectedCallback to whatever is the innerHTML.
+}
+//(plugins should extend this object)
+
+//### Plugins ###: 
+//EJS render: 
+cse.element.render = function(state) {
+  return ejs.render(this.template, { state: state })
+}
+//###
+
 //### Listener (blueprint for how to build the element;
 //or one page of a set of blueprints as other listeners may
 //be defined)
@@ -21,6 +34,9 @@ cse.listen = function(elementName, callback) {
 
   if(!existingElement) {
 
+    var element = _.clone(cse.element)
+    element.name = elementName
+
     //Establish the base element: HTMLAnchorElement
     class newElement extends HTMLElement  {
       constructor() {
@@ -28,31 +44,26 @@ cse.listen = function(elementName, callback) {
         this.addEventListener('click', e => {
           console.log(e)
           //fire the 'element-name/click' command...
-          cse.fire('m-button/click')
+          cse.fire(elementName + '/click')
         })
-        this.name = elementName       
+        this.name = elementName 
       }
       connectedCallback() {
         //console.log('connected')
         //This is how we can confirm when a given element is added to the DOM.
+        element.template = this.innerHTML
       }
     }
 
     window.customElements.define(elementName, newElement)
-    // var element = {
-    //   name: elementName, 
-    //   DOM: document.createElement(elementName)
-    // }
 
-    var element = {
-      name: elementName, 
-      DOM:document.createElement(elementName), 
-      template: 'test'
-      //middleware : [callback]
-      // render: function(state) {
-      //   this.DOM.innerHTML = ejs.render(template, {state: state});
-      // }
-    }
+    element.DOM = document.createElement(elementName)
+
+    //Default renderer: 
+    if(!element.render) element.render = (state)=> { element.DOM.innerHTML = element.template }
+
+    //middleware : [callback]
+    //load any additional plugins here
 
     //Make an entry for it; add to known elements and define middleware array/stack:
     this.entries.push({ middleware : [callback], element : element })
@@ -87,12 +98,16 @@ cse.fireAll = function(state, callback) {
       //so they can update based on the latest spec (resultingElement): 
       var existingDOMelements = document.querySelectorAll(entry.element.name)
       existingDOMelements.forEach(function(element){
+        //debugger
         //Render by updating innerHTML with EJS output: 
-        element.innerHTML = ejs.render(entry.element.template, { state: state })
+        //element.render(state)
+        element.innerHTML = resultingElement.render(state)
       })
+      console.log('rendered ' + entry.element.name)
       callback(null)
     })
   })
 }
+
 
 module.exports = cse
