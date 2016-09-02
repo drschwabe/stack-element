@@ -51,7 +51,12 @@ cse.listen = function(elementName, callback) {
       connectedCallback() {
         //console.log('connected')
         //This is how we can confirm when a given element is added to the DOM.
-        element.template = this.innerHTML
+        //To parse the element we need to undescape HTML entities...
+        let template = _.unescape(this.innerHTML)
+        //and then repair the EJS delimiters: 
+        while(template.indexOf("<!--?") >= 0) { template = template.replace("<!--?", "<?")}
+        while(template.indexOf("?-->") >= 0) { template = template.replace("?-->", "?>")}     
+        element.template = template
       }
     }
 
