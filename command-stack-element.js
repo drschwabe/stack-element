@@ -1,10 +1,6 @@
 var _ = require('underscore'), 
     async = require('async')
 
-//Templating language: 
-var ejs = require('ejs')
-ejs.delimiter = '?' //< ex: <p><?= myVariable ?></p>
-
 //Make available custom elements v1 API: 
 require('webcomponentsjs-custom-element-v1')
 
@@ -18,10 +14,15 @@ cse.element = {
 //(plugins should extend this object)
 
 //### Plugins ###: 
-//EJS render: 
+//EJS Templates: 
+var ejs = require('ejs')
+ejs.delimiter = '?' //< ex: <p><?= myVariable ?></p>
+//Main render function: 
 cse.element.render = function(state) {
   return ejs.render(this.template, { state: state })
 }
+//jQuery/cheerio: 
+
 //###
 
 //### Listener (blueprint for how to build the element;
@@ -91,8 +92,6 @@ cse.fireAll = function(state, callback) {
     //Seed the element's middleware with the state and element: 
     var middlewareToRun = entry.middleware.slice(0)
     middlewareToRun.unshift(function(next) { next(null, state, entry.element) })
-
-    //Pad each middleware function with a jquery: 
 
     //Run the middleware stack: 
     async.waterfall(middlewareToRun, function(err, state, resultingElement ) {
