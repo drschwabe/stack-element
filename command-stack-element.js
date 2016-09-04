@@ -52,7 +52,7 @@ cse.listen = function(elementName, callback) {
         //console.log('connected')
         //This is how we can confirm when a given element is added to the DOM.
         //To parse the element we need to undescape HTML entities...
-        let template = _.unescape(this.innerHTML)
+        let template = _.unescape(this.outerHTML)
         //and then repair the EJS delimiters: 
         while(template.indexOf("<!--?") >= 0) { template = template.replace("<!--?", "<?")}
         while(template.indexOf("?-->") >= 0) { template = template.replace("?-->", "?>")}     
@@ -92,6 +92,8 @@ cse.fireAll = function(state, callback) {
     var middlewareToRun = entry.middleware.slice(0)
     middlewareToRun.unshift(function(next) { next(null, state, entry.element) })
 
+    //Pad each middleware function with a jquery: 
+
     //Run the middleware stack: 
     async.waterfall(middlewareToRun, function(err, state, resultingElement ) {
       if(err) return console.log(err)
@@ -106,7 +108,7 @@ cse.fireAll = function(state, callback) {
         //debugger
         //Render by updating innerHTML with EJS output: 
         //element.render(state)
-        element.innerHTML = resultingElement.render(state)
+        element.outerHTML = resultingElement.render(state)
       })
       console.log('rendered ' + entry.element.name)
       callback(null)
