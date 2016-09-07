@@ -5,7 +5,10 @@ var _ = require('underscore'),
 require('webcomponentsjs-custom-element-v1')
 
 //Store all elements here: 
-var cse = {  entries : [] }
+var cse = {  
+  entries : [], 
+  commandstack : require('command-stack') //< Store it's own commandstack too. 
+}
 
 //Base model for the element: 
 cse.element = {
@@ -23,6 +26,10 @@ cse.element.render = function(state) {
 }
 //jQuery/cheerio: 
 
+//Browserify CSS: 
+cse.element.addStyle = function(css) {
+  require('browserify-css').createStyle(`${this.name} ${css}`)  
+}
 //###
 
 //### Listener (blueprint for how to build the element;
@@ -43,7 +50,8 @@ cse.listen = function(elementName, callback) {
       constructor() {
         super()
         this.addEventListener('click', e => {
-          console.log(e)
+          //console.log(e)
+          console.log('clicked on ' + elementName)
           //fire the 'element-name/click' command...
           cse.fire(elementName + '/click')
         })
@@ -80,8 +88,16 @@ cse.listen = function(elementName, callback) {
   }
 }
 
+
+
 //Fire (build the element)
-cse.fire = function(elementName, state, callback) {
+cse.fire = function(elementName, callback) {
+  var that = this
+  // this.commandstack.fire(path, this.commandstack.latestState, function(err, newState) {
+  //   //After firing the standard commandstack, run the middleware for just this element.
+  //   var targetEntry = _.findWhere(that.entries, { name: elementName })
+  //   cse.fireEnties([targetEntry], callback)    
+  // })
 }
 
 //Fire all elements in parallel: 
@@ -91,6 +107,11 @@ cse.fireAll = function(state, callback) {
 
     //Seed the element's middleware with the state and element: 
     var middlewareToRun = entry.middleware.slice(0)
+
+    //Pad each middleware function with a jquery: 
+    //i did some padding in the original command-stack i believe; can reference the technique there
+    //then can load jquery cheerio on each call, pre-bake the $this object
+
     middlewareToRun.unshift(function(next) { next(null, state, entry.element) })
 
     //Run the middleware stack: 
@@ -107,6 +128,8 @@ cse.fireAll = function(state, callback) {
         //debugger
         //Render by updating innerHTML with EJS output: 
         //element.render(state)
+        //If element has pass attribute, we skip the rendering: 
+        if(element.hasAttribute('pass')) return
         element.outerHTML = resultingElement.render(state)
       })
       console.log('rendered ' + entry.element.name)
