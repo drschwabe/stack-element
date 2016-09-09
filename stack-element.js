@@ -60,7 +60,7 @@ var stackElement = function(stack) {
       element.DOM = document.createElement(elementName)
 
       //Default renderer: 
-      if(!element.render) element.render = (state)=> { element.DOM.innerHTML = element.template }
+      if(!element.render) element.render = (state)=> { return element.template }
 
       //Make an entry for it; add to known elements and define middleware array/stack:
       //this.entries.push({ middleware : [callback], element : element })      
@@ -75,8 +75,6 @@ var stackElement = function(stack) {
   //Expose another special route for elements to react 
   //to a root level command: 
   stack.on('/element/:elementName/on/:command', (state, next) => {
-    console.log(state.req.elementName + 'recieved root level command: ')
-    console.log(state.req.command)
     next(null, state)
   })
 
@@ -84,30 +82,36 @@ var stackElement = function(stack) {
 
   // })
 
-  // stack.last((state, next) => {
-  //   console.log('root command stage')    
-  //   //For each element, fire the given stack...
-  //   //debugger
-  //   state.elements
-  //   //stack.lastOff()    
-  //   async.eachSeries(state.elements, function(element, callback) {
-  //     stack.fire('/' + element.name + '/on' + state.req.path, state, callback)
-  //   }, function(err) {
-  //     //stack.lastOn()
-  //     next(null, state)      
-  //   })
-  // })
+  stack.last((state, next) => {
+    console.log('stack.last()')    
+    //For each element, fire the command...
+    stack.lastOff() //< Disable last off to prevent infinite loop. 
+    async.eachSeries(state.elements, function(element, callback) {
+      var command = '/element/' + element.name + '/on' + state.req.path
+      stack.fire(command, state, callback)
+    }, function(err) { //Defer and then turn back on the stack.last feature: 
+      _.defer(() => { stack.lastOn() })
+      next(null, state)    
+    })
+  })
 
-  // stack.last((state, next) => {
-  //   console.log('render state')
-  //   //For each element, render it: 
-  //   async.eachSeries(state.elements, function(element, callback) {
-  //     element.render(state)
-  //     callback(null)
-  //   }, function(err) {
-  //     next(null, state)      
-  //   })
-  // })
+  stack.last((state, next) => {
+    console.log('render state')
+    //For each element on the stack...
+    async.eachSeries(state.elements, function(element, callback) {
+      //Find any instances of the element in the current DOM: 
+      var existingDOMelements = document.querySelectorAll(element.name)
+      existingDOMelements.forEach(function(domElem){
+        //Render by replacing outerHTML with updated template. 
+        if(domElem.hasAttribute('pass')) return
+        //^ If element has pass attribute, we skip the rendering.      
+        domElem.outerHTML = element.render(state)
+      })            
+      callback(null)
+    }, function(err) {
+      next(null, state)      
+    })
+  })
 
 }
 
