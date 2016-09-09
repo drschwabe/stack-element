@@ -3,6 +3,8 @@
 //Make available custom elements v1 API: 
 require('webcomponentsjs-custom-element-v1')
 
+var async = require('async')
+
 var stackElement = function(stack) {
   console.log('init stackElement...')
 
@@ -11,11 +13,15 @@ var stackElement = function(stack) {
     template : ''
   }
 
-//  stack.on('/element/m-button', (state, next) => {
+  //Expose a special route for defining elements: 
+  //Ex: '/element/my-button'
   stack.on('/element/:elementName', (state, next) => {  
     console.log('we have an element: ' + state.req.elementName)
 
     let elementName = state.req.elementName
+
+    //Create a property to store the elements: 
+    if(!state.elements) state.elements = []
 
     //Determine if the element already entered into the stack: 
     var existingElement = _.find(state.elements, function(entry) { return entry.element.name == elementName })
@@ -58,12 +64,51 @@ var stackElement = function(stack) {
 
       //Make an entry for it; add to known elements and define middleware array/stack:
       //this.entries.push({ middleware : [callback], element : element })      
-      state.element = element 
+      state.elements.push(element)
+      state.element = element       
     } else {
       state.element = existingElement
     }
     next(null, state)    
   })
+
+  //Expose another special route for elements to react 
+  //to a root level command: 
+  stack.on('/element/:elementName/on/:command', (state, next) => {
+    console.log(state.req.elementName + 'recieved root level command: ')
+    console.log(state.req.command)
+    next(null, state)
+  })
+
+  // stack.on('/element/:elementName/fire', (state, next) => {
+
+  // })
+
+  // stack.last((state, next) => {
+  //   console.log('root command stage')    
+  //   //For each element, fire the given stack...
+  //   //debugger
+  //   state.elements
+  //   //stack.lastOff()    
+  //   async.eachSeries(state.elements, function(element, callback) {
+  //     stack.fire('/' + element.name + '/on' + state.req.path, state, callback)
+  //   }, function(err) {
+  //     //stack.lastOn()
+  //     next(null, state)      
+  //   })
+  // })
+
+  // stack.last((state, next) => {
+  //   console.log('render state')
+  //   //For each element, render it: 
+  //   async.eachSeries(state.elements, function(element, callback) {
+  //     element.render(state)
+  //     callback(null)
+  //   }, function(err) {
+  //     next(null, state)      
+  //   })
+  // })
+
 }
 
 
