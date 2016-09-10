@@ -1,6 +1,6 @@
 {
   "name": "stack-element",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Modular DOM elements that incrementally construct via Stack middleware.",
   "main": "stack-element.js",
   "author": "Derrick Schwabe",
