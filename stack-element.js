@@ -98,22 +98,12 @@ var stackElement = function(stack) {
   stack.last((state, next) => {
     console.log('stack.last() ... attempting to run root command for each element')   
     console.log(state.req.path) 
-    console.log(state.elements)
     //For each element, fire the command...
-    stack.lastOff() //< Disable last off to prevent infinite loop.   
-    //Don't fire if this is an element command:       
-    // var search = state.req.path.search('/element/')  
-    // if(search !== -1) {
-    //   stack.lastOn()
-    //   return next(null, state)
-    // } 
+    stack.lastOff() //< disable last off to prevent infinite loop.   
     async.eachSeries(state.elements, function(element, callback) {
-      //Does state.req.path contain our element? 
-      console.log(element.name)
-      console.log(state.req.path)
-      var search = state.req.path.search(element.name)
-      console.log(search)
-      if(search === -1) return callback(null)
+      var search = state.req.path.search('/element/' + element.name)
+      if(search != -1) return callback(null)
+      //^ Avoids the command from being appended multiple times. 
       var command = '/element/' + element.name + '/on' + state.req.path
       state.element = element
       console.log('command: ')
