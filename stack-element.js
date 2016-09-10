@@ -99,37 +99,28 @@ var stackElement = function(stack) {
     console.log('stack.last() ... attempting to run root command for each element')   
     console.log('current command path: ')
     console.log(state.req.path) 
+    //Skip if the current command has /element/ in it: 
+    if(state.req.path.search('/element/') != -1) return next(null, state)
+    var originalPath = state.req.path
     //For each element, fire the command...
-    //stack.lastOff() //< disable last off to prevent infinite loop. 
-    //var originalElement = state.element 
-    //^ Keep track of this so we can re-apply it later.
     async.eachSeries(state.elements, function(element, callback) {
-      //var search = state.req.path.search('/element/' + element.name)
-      //var search2 = state.req.path.search('/on/element/')
-      //console.log(state.req.path)
-      //if(search != -1 || search2 != -1) return callback(null)
-      if(state.req.path.search('/on/') != -1 || state.req.path.search('/element/') != -1
-      ) return callback(null)      
+      // if(state.req.path.search('/on/') != -1 || state.req.path.search('/element/') != -1
+      // ) return callback(null)      
       //^ Avoids the command from being appended multiple times. 
-      var command = '/element/' + element.name + '/on' + state.req.path
+      var command = '/element/' + element.name + '/on' + originalPath
       state.element = element
-      console.log('command: ')
-      console.log(command)
-      console.log('element: ')
-      console.log(element.name)
+      // console.log('new command path: ')
+      // console.log(command)
+      // console.log('current element: ')
+      // console.log(element.name)
       stack.fire(command, state, callback)
     }, function(err) { //Defer and then turn back on the stack.last feature: 
-      //_.defer(() => { stack.lastOn() })
-      //stack.lastOn()
-      //console.log(updatedState.)
-      //state.element = originalElement
       next(null, state)    
     })
   })
 
   stack.last((state, next) => {
     console.log('render state... ')
-    //console.log(state.elements)
     //For each element on the stack...
     async.eachSeries(state.elements, function(element, callback) {
       //Find any instances of the element in the current DOM: 
