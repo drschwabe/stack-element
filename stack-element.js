@@ -24,7 +24,7 @@ var stackElement = function(stack) {
     if(!state.elements) state.elements = []
 
     //Determine if the element already entered into the stack: 
-    var existingElement = _.find(state.elements, function(entry) { return entry.element.name == elementName })
+    var existingElement = _.find(state.elements, function(elem) { return elem.name == elementName })
 
     if(!existingElement) {
 
@@ -88,6 +88,7 @@ var stackElement = function(stack) {
     stack.lastOff() //< Disable last off to prevent infinite loop. 
     async.eachSeries(state.elements, function(element, callback) {
       var command = '/element/' + element.name + '/on' + state.req.path
+      state.element = element
       stack.fire(command, state, callback)
     }, function(err) { //Defer and then turn back on the stack.last feature: 
       _.defer(() => { stack.lastOn() })
