@@ -3,7 +3,7 @@
 //Make available custom elements v1 API: 
 require('webcomponentsjs-custom-element-v1')
 
-var async = require('async')
+var async = require('async') 
 
 var stackElement = function(stack) {
   console.log('init stackElement...')
@@ -57,39 +57,46 @@ var stackElement = function(stack) {
           this.name = elementName 
         }
         connectedCallback() {
-          //console.log('connected')
-          //This is how we can confirm when a given element is added to the DOM.
-          //To parse the element we need to undescape HTML entities...
-          let template = _.unescape(this.outerHTML)
-          //and then repair the EJS delimiters: 
-          while(template.indexOf("<!--?") >= 0) { template = template.replace("<!--?", "<?")}
-          while(template.indexOf("?-->") >= 0) { template = template.replace("?-->", "?>")}     
-          element.template = template
+          if(element.connected) return
+          //Get the raw innerHTML of the element: 
+          element.template = this.outerHTML
+          //The given element has been added to the DOM.
+          stack.fire('/element/' + elementName + '/connected')
+          //TODO ^ update fire so that it uses latest state. 
+          //this fire above is a good use case; since it is implied that
+          //we don't necessarily have the current state. 
+          element.connected = true
         }
       }
 
-      window.customElements.define(elementName, newElement)
-
-      element.DOM = document.createElement(elementName)
-
       //Default renderer: 
+      console.log('add default render')
       if(!element.render) element.render = (state)=> { return element.template }
 
-      //Make an entry for it; add to known elements and define middleware array/stack:
-      //this.entries.push({ middleware : [callback], element : element })      
+      //Make an entry for it; add to known elements: 
       state.elements.push(element)
-      state.element = element       
+      state.element = element
+
+      //Kind of a hack: 
+      stack.on('/element/' + elementName + '/connected', function(state2, next2) {
+        return next(null, state2)
+      })
+
+      //This effectively fires the 'connected' event above...
+      window.customElements.define(elementName, newElement)
+      element.DOM = document.createElement(elementName)
+
     } else {
       state.element = existingElement
+      next(null, state)          
     }
-    next(null, state)    
   })
 
   //Expose another special route for elements to react 
   //to a root level command: 
-  stack.on('/element/:elementName/on/:command', (state, next) => {
-    next(null, state)
-  })
+  // stack.on('/element/:elementName/on/:command', (state, next) => {
+  //   next(null, state)
+  // })
 
   // stack.on('/element/:elementName/fire', (state, next) => {
 
@@ -113,6 +120,7 @@ var stackElement = function(stack) {
       // console.log(command)
       // console.log('current element: ')
       // console.log(element.name)
+
       stack.fire(command, state, callback)
     }, function(err) { //Defer and then turn back on the stack.last feature: 
       next(null, state)    
@@ -128,7 +136,7 @@ var stackElement = function(stack) {
       existingDOMelements.forEach(function(domElem){
         //Render by replacing outerHTML with updated template. 
         if(domElem.hasAttribute('pass')) return
-        //^ If element has pass attribute, we skip the rendering.      
+        //^ If element has pass attribute, we skip the rendering. 
         domElem.outerHTML = element.render(state)
       })            
       callback(null)
