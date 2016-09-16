@@ -26,6 +26,7 @@ var stackElement = function(stack) {
   //   })
   // })  
 
+
   //Expose a special route for defining elements: 
   //Ex: '/element/my-button'
   stack.on('/element/:elementName', (state, next) => {  
@@ -44,12 +45,18 @@ var stackElement = function(stack) {
       var element = _.clone(elementProto)
       element.name = elementName
 
-      //Establish the base element:
+      //Default renderer: 
+      if(!element.render) element.render = (state) => element.template
+
+      //Make an entry for it; add to known elements: 
+      state.elements.push(element)
+      state.element = element
+
+      //Establish the DOM aspect of the element: 
       class newElement extends HTMLElement  {
         constructor() {
           super()
           this.addEventListener('click', e => {
-            //console.log(e)
             console.log('clicked on ' + elementName)
             //fire the 'element-name/click' command...
           })
@@ -61,24 +68,12 @@ var stackElement = function(stack) {
           //get the raw innerHTML of the element: 
           element.template = this.outerHTML
           element.connected = true //< flag so this doesn't run again.
-          stack.fire('/element/' + elementName + '/connected')
+          stack.fire('/element/' + elementName + '/connected', state, function(err, newState) {
+            next(null, newState)
+          })
           //^ so consumers can do stuff to the element after it connects.
         }
       }
-
-      //Default renderer: 
-      console.log('add default render')
-      if(!element.render) element.render = (state)=> { return element.template }
-
-      //Make an entry for it; add to known elements: 
-      state.elements.push(element)
-      state.element = element
-
-      //Save the state and queue the 'next' function
-      //so that current next is pushed and popped during the
-      //next fire (which will be the 'connected' event defined above)
-      stack.state = state      
-      stack.next_queue.push(next)
 
       //This effectively fires the 'connected' event above...
       window.customElements.define(elementName, newElement)
@@ -131,6 +126,7 @@ var stackElement = function(stack) {
       })            
       callback(null)
     }, function(err) {
+      //state.element = null //< Clear the element from state.
       next(null, state)      
     })
   })
