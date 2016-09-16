@@ -44,7 +44,7 @@ var stackElement = function(stack) {
       var element = _.clone(elementProto)
       element.name = elementName
 
-      //Establish the base element: HTMLAnchorElement
+      //Establish the base element:
       class newElement extends HTMLElement  {
         constructor() {
           super()
@@ -52,20 +52,17 @@ var stackElement = function(stack) {
             //console.log(e)
             console.log('clicked on ' + elementName)
             //fire the 'element-name/click' command...
-            //cse.fire(elementName + '/click')
           })
           this.name = elementName 
         }
         connectedCallback() {
+          //The given element has been added to the DOM...          
           if(element.connected) return
-          //Get the raw innerHTML of the element: 
+          //get the raw innerHTML of the element: 
           element.template = this.outerHTML
-          //The given element has been added to the DOM.
+          element.connected = true //< flag so this doesn't run again.
           stack.fire('/element/' + elementName + '/connected')
-          //TODO ^ update fire so that it uses latest state. 
-          //this fire above is a good use case; since it is implied that
-          //we don't necessarily have the current state. 
-          element.connected = true
+          //^ so consumers can do stuff to the element after it connects.
         }
       }
 
@@ -77,14 +74,15 @@ var stackElement = function(stack) {
       state.elements.push(element)
       state.element = element
 
-      //Kind of a hack: 
-      stack.on('/element/' + elementName + '/connected', function(state2, next2) {
-        return next(null, state2)
-      })
+      //Save the state and queue the 'next' function
+      //so that current next is pushed and popped during the
+      //next fire (which will be the 'connected' event defined above)
+      stack.state = state      
+      stack.next_queue.push(next)
 
       //This effectively fires the 'connected' event above...
       window.customElements.define(elementName, newElement)
-      element.DOM = document.createElement(elementName)
+      element.DOM = document.createElement(elementName) 
 
     } else {
       state.element = existingElement
@@ -111,16 +109,8 @@ var stackElement = function(stack) {
     var originalPath = state.req.path
     //For each element, fire the command...
     async.eachSeries(state.elements, function(element, callback) {
-      // if(state.req.path.search('/on/') != -1 || state.req.path.search('/element/') != -1
-      // ) return callback(null)      
-      //^ Avoids the command from being appended multiple times. 
       var command = '/element/' + element.name + '/on' + originalPath
       state.element = element
-      // console.log('new command path: ')
-      // console.log(command)
-      // console.log('current element: ')
-      // console.log(element.name)
-
       stack.fire(command, state, callback)
     }, function(err) { //Defer and then turn back on the stack.last feature: 
       next(null, state)    
