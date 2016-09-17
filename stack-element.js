@@ -85,20 +85,11 @@ var stackElement = function(stack) {
     }
   })
 
-  //Expose another special route for elements to react 
-  //to a root level command: 
-  // stack.on('/element/:elementName/on/:command', (state, next) => {
-  //   next(null, state)
-  // })
-
-  // stack.on('/element/:elementName/fire', (state, next) => {
-
-  // })
-
+  //Run an extra command based on the current command, 
+  //specifically for a given element: 
   stack.last((state, next) => {
-    console.log('stack.last() ... attempting to run root command for each element')   
-    console.log('current command path: ')
-    console.log(state.req.path) 
+    //console.log('stack.last() ... attempting to run root command for each element')
+    console.log('stack.last() run root command: ' + state.req.path)   
     //Skip if the current command has /element/ in it: 
     if(state.req.path.search('/element/') != -1) return next(null, state)
     var originalPath = state.req.path
@@ -113,22 +104,16 @@ var stackElement = function(stack) {
   })
 
   stack.last((state, next) => {
-    console.log('render state... ')
-    //For each element on the stack...
-    async.eachSeries(state.elements, function(element, callback) {
-      //Find any instances of the element in the current DOM: 
-      var existingDOMelements = document.querySelectorAll(element.name)
-      existingDOMelements.forEach(function(domElem){
-        //Render by replacing outerHTML with updated template. 
-        if(domElem.hasAttribute('pass')) return
-        //^ If element has pass attribute, we skip the rendering. 
-        domElem.outerHTML = element.render(state)
-      })            
-      callback(null)
-    }, function(err) {
-      //state.element = null //< Clear the element from state.
-      next(null, state)      
-    })
+    //Find any instances of the current element in the DOM: 
+    var existingDOMelements = document.querySelectorAll(state.element.name)
+    existingDOMelements.forEach(function(domElem){
+      //Render by replacing outerHTML with updated template. 
+      if(domElem.hasAttribute('pass')) return
+      //^ If element has pass attribute, we skip the rendering
+      //(useful if another element is rendering it's content).
+      domElem.outerHTML = state.element.render(state)
+    })            
+    next(null, state)      
   })
 
 }
