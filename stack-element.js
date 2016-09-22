@@ -13,18 +13,22 @@ var stackElement = function(stack) {
     template : ''
   }
 
-  // stack.on('/element/init', (state, next) => {
-  //   console.log('init all elements...')
-  //   //next(null, state)
-  //   //find all of the listeners...
-  //   debugger
-  //   async.eachSeries(state.elements, function(element, callback) {
-  //     stack.fire('/element/' + element.name, state, callback)
-  //   }, (err) => {
-  //     console.log('initialized all elements.')
-  //     next(null, state)
-  //   })
-  // })  
+  stack.on('/element/init/:prefix', (state, next) => {
+    //For each custom element, initialize them...
+    //first, scoop all elements...
+    var allElems = document.querySelectorAll('html /deep/ *')
+    var targetElems = _.chain(allElems)
+      //filter out only the elements which contain the prefix...
+      .filter((elem) => elem.localName.indexOf(state.req.prefix + '-') !== -1)
+      //convert to just an array of the names: 
+      .map((elem) => elem.localName)
+      //remove duplicates: 
+      .uniq()
+      .value()
+
+    //now simply loop over the names and intit them via stack.fire: 
+    targetElems.forEach((elem) => stack.fire('/element/' + elem))
+  })
 
 
   //Expose a special route for defining elements: 
