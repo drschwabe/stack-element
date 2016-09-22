@@ -104,6 +104,7 @@ var stackElement = function(stack) {
   })
 
   stack.last((state, next) => {
+    if(!state.element) return next(null, state) //< Skip if no element established.    
     //Find any instances of the current element in the DOM: 
     var existingDOMelements = document.querySelectorAll(state.element.name)
     existingDOMelements.forEach(function(domElem){
