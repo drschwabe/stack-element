@@ -27,7 +27,9 @@ var stackElement = function(stack) {
       .value()
 
     //now simply loop over the names and intit them via stack.fire: 
-    targetElems.forEach((elem) => stack.fire('/element/' + elem))
+    async.eachSeries(targetElems, (elem, callback) => {
+      stack.fire('/element/' + elem, callback)
+    }, (err) => next(null, state))
   })
 
 
