@@ -63,8 +63,8 @@ var stackElement = function(stack) {
         constructor() {
           super()
           this.addEventListener('click', e => {
-            console.log('clicked on ' + elementName)
-            //fire the 'element-name/click' command...
+            stack.state.element = element //Set the element. 
+            stack.fire('/element/' + elementName + '/clicked')
           })
           this.name = elementName 
         }
