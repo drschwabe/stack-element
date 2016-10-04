@@ -64,7 +64,15 @@ var stackElement = function(stack) {
           super()
           this.addEventListener('click', e => {
             stack.state.element = element //Set the element. 
-            stack.fire('/element/' + elementName + '/clicked')
+            console.log(e)
+            console.log(e.target.localName.indexOf('input'))
+            //Quick hack to deal with auto-rerendering..
+            //do not run click event fire on click
+            if( e.target.localName.indexOf('input') === -1 ) {
+              stack.fire('/element/' + elementName + '/clicked')
+            }
+          }, {
+            capture: false
           })
           this.name = elementName 
         }
