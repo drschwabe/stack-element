@@ -54,6 +54,13 @@ var stackElement = function(stack) {
       //Default renderer: 
       if(!element.render) element.render = (state) => element.template
 
+      //Make a render route available for elements that aren't being auto-rendered: 
+      stack.on('/element/' + elementName + '/render', (state, next) => {
+        //Find the elem in the dom, find the corresponding elem in the state, and render/update: 
+        document.querySelector(elementName).outerHTML = _.findWhere(stack.state.elements, { name : elementName }).render(stack.state)
+        next(null, state)
+      })
+
       //Make an entry for it; add to known elements: 
       state.elements.push(element)
       state.element = element
@@ -69,6 +76,7 @@ var stackElement = function(stack) {
             //Quick hack to deal with auto-rerendering..
             //do not run click event fire on click
             if( e.target.localName.indexOf('input') === -1 ) {
+              stack.state.e = e
               stack.fire('/element/' + elementName + '/clicked')
             }
           }, {
