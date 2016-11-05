@@ -2,6 +2,9 @@
 
 ## Usage
 `npm install stack-element`
+
+(requires browser supporting new custom elements spec, ie: Chrome 54+)
+
 ```javascript
 var stack = require('stack')
 require('stack-element')(stack) 

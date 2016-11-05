@@ -1,8 +1,5 @@
 //Stack Element
 
-//Make available custom elements v1 API: 
-require('webcomponentsjs-custom-element-v1')
-
 var async = require('async') 
 
 var stackElement = function(stack) {
@@ -57,7 +54,8 @@ var stackElement = function(stack) {
       //Make a render route available for elements that aren't being auto-rendered: 
       stack.on('/element/' + elementName + '/render', (state, next) => {
         //Find the elem in the dom, find the corresponding elem in the state, and render/update: 
-        document.querySelector(elementName).outerHTML = _.findWhere(stack.state.elements, { name : elementName }).render(stack.state)
+        state.element = _.findWhere(stack.state.elements, { name : elementName })
+        document.querySelector(elementName).outerHTML = state.element.render(stack.state)
         next(null, state)
       })
 
@@ -71,14 +69,8 @@ var stackElement = function(stack) {
           super()
           this.addEventListener('click', e => {
             stack.state.element = element //Set the element. 
-            console.log(e)
-            console.log(e.target.localName.indexOf('input'))
-            //Quick hack to deal with auto-rerendering..
-            //do not run click event fire on click
-            if( e.target.localName.indexOf('input') === -1 ) {
-              stack.state.e = e
-              stack.fire('/element/' + elementName + '/clicked')
-            }
+            stack.state.e = e
+            stack.fire('/element/' + elementName + '/clicked')
           }, {
             capture: false
           })
@@ -135,7 +127,8 @@ var stackElement = function(stack) {
       //^ If element has pass attribute, we skip the rendering
       //(useful if another element is rendering it's content).
       domElem.outerHTML = state.element.render(state)
-    })            
+    })
+    stack.state.e = null //< Reset any event. 
     next(null, state)      
   })
 
