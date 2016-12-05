@@ -16,7 +16,7 @@ var stackElement = function(stack) {
     var allElems = document.querySelectorAll('html /deep/ *')
     var targetElems = _.chain(allElems)
       //filter out only the elements which contain the prefix...
-      .filter((elem) => elem.localName.indexOf(state.req.prefix + '-') !== -1)
+      .filter((elem) => elem.localName.indexOf(state._command.prefix + '-') !== -1)
       //convert to just an array of the names: 
       .map((elem) => elem.localName)
       //remove duplicates: 
@@ -33,9 +33,8 @@ var stackElement = function(stack) {
   //Expose a special route for defining elements: 
   //Ex: '/element/my-button'
   stack.on('/element/:elementName', (state, next) => {  
-    //console.log('we have an element: ' + state.req.elementName)
 
-    let elementName = state.req.elementName
+    let elementName = state._command.elementName
 
     //Create a property to store the elements: 
     if(!state.elements) state.elements = []
@@ -103,10 +102,9 @@ var stackElement = function(stack) {
   //specifically for a given element: 
   stack.last((state, next) => {
     //console.log('stack.last() ... attempting to run root command for each element')
-    console.log('stack.last() run root command: ' + state.req.path)   
     //Skip if the current command has /element/ in it: 
-    if(state.req.path.search('/element/') != -1) return next(null, state)
-    var originalPath = state.req.path
+    if(state._command.path.search('/element/') != -1) return next(null, state)
+    var originalPath = state._command.path
     //For each element, fire the command...
     async.eachSeries(state.elements, function(element, callback) {
       var command = '/element/' + element.name + '/on' + originalPath
