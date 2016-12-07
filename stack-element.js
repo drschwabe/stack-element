@@ -1,5 +1,10 @@
 //Stack Element
 
+//Make customElements API available (Chrome54+ ok): 
+if(!window.customElements) {
+  require('webcomponentsjs-custom-element-v1')  
+}
+
 var async = require('async') 
 
 var stackElement = function(stack) {
