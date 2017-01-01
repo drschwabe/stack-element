@@ -28,10 +28,15 @@ var stackElement = function(stack) {
       .uniq()
       .value()
 
-    //now simply loop over the names and intit them via stack.fire: 
+    //now loop over the names and intit them via stack.fire: 
     async.eachSeries(targetElems, (elem, callback) => {
-      stack.fire('/element/' + elem, callback)
-    }, (err) => next(null, state))
+      //Skip any elements that do not have an instance in the DOM: 
+      if(!document.querySelectorAll(elem).length) return callback(null)
+      stack.fire('/element/' + elem,  callback)
+    }, (err) => {
+      if(err) return console.log(err) 
+      next(null, state)
+    })
   })
 
 
