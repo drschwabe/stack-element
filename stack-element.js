@@ -5,15 +5,31 @@ if(!window.customElements) {
   require('webcomponentsjs-custom-element-v1')  
 }
 
-var async = require('async') 
+var async = require('async'), 
+    $ = require('jquery') 
 
 var stackElement = function(stack) {
-  console.log('init stackElement...')
 
   //Setup the models: 
   let elementProto = {
     template : ''
   }
+
+  //Add a body listener so this can be listened on as well
+  //also may be needed as part of the implied rendering pipeline 
+  //for stack-element-ejs. 
+  $('body').on('click', (e) => {
+    stack.state.e = e
+    stack.fire('/element/body/clicked', (err, newMeta) => {
+      if(err) return console.log(err)
+      //If the target element clicked (within the body) is a registered
+      //element, fire it's click command. 
+      var elementNames = _.map(stack.state.elements, (element) => {
+        return element.name
+      })
+      if(_.contains(elementNames, e.target.name)) stack.fire('/elment/' + e.target.name + '/clicked')
+    })
+  })
 
   stack.on('/element/init/:prefix', (state, next) => {
     //For each custom element, initialize them...
@@ -77,6 +93,7 @@ var stackElement = function(stack) {
         constructor() {
           super()
           this.addEventListener('click', e => {
+            //console.log('element clicked: ' + elementName)
             stack.state.element = element //Set the element. 
             stack.state.e = e
             stack.fire('/element/' + elementName + '/clicked')
@@ -139,6 +156,8 @@ var stackElement = function(stack) {
     stack.state.e = null //< Reset any event. 
     next(null, state)      
   })
+
+
 
 }
 
