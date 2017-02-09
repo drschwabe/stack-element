@@ -6,7 +6,8 @@ if(!window.customElements) {
 }
 
 var async = require('async'), 
-    $ = require('jquery') 
+    $ = require('jquery'), 
+    _ = require('underscore')
 
 var stackElement = function(stack) {
 
@@ -14,22 +15,6 @@ var stackElement = function(stack) {
   let elementProto = {
     template : ''
   }
-
-  //Add a body listener so this can be listened on as well
-  //also may be needed as part of the implied rendering pipeline 
-  //for stack-element-ejs. 
-  $('body').on('click', (e) => {
-    stack.state.e = e
-    stack.fire('/element/body/clicked', (err, newMeta) => {
-      if(err) return console.log(err)
-      //If the target element clicked (within the body) is a registered
-      //element, fire it's click command. 
-      var elementNames = _.map(stack.state.elements, (element) => {
-        return element.name
-      })
-      if(_.contains(elementNames, e.target.name)) stack.fire('/elment/' + e.target.name + '/clicked')
-    })
-  })
 
   stack.on('/element/init/:prefix', (state, next) => {
     //For each custom element, initialize them...
@@ -92,8 +77,16 @@ var stackElement = function(stack) {
       class newElement extends HTMLElement  {
         constructor() {
           super()
+
+          this.addEventListener('mouseup', e=> {
+            stack.state.element = element //Set the element. 
+            stack.state.e = e            
+            stack.fire('/element/' + elementName + '/mouseup')            
+          }, {
+            capture: false
+          })        
+
           this.addEventListener('click', e => {
-            //console.log('element clicked: ' + elementName)
             stack.state.element = element //Set the element. 
             stack.state.e = e
             stack.fire('/element/' + elementName + '/clicked')
@@ -148,7 +141,7 @@ var stackElement = function(stack) {
     var existingDOMelements = document.querySelectorAll(state.element.name)
     existingDOMelements.forEach(function(domElem){
       //Render by replacing outerHTML with updated template. 
-      if(domElem.hasAttribute('pass')) return
+      if(domElem.hasAttribute('pass') || state.element.pass) return
       //^ If element has pass attribute, we skip the rendering
       //(useful if another element is rendering it's content).
       domElem.outerHTML = state.element.render(state)
