@@ -1,4 +1,6 @@
 //Stack Element
+console.log('stack element')
+
 
 //Make customElements API available (Chrome54+ ok): 
 if(!window.customElements) {
@@ -16,7 +18,7 @@ var stackElement = function(stack) {
     template : ''
   }
 
-  stack.on('/element/init/:prefix', (state, next) => {
+  stack.on(['/element/init/:prefix', 'element/init/:prefix'], (state, next) => {
     //For each custom element, initialize them...
     //first, scoop all elements...
     var allElems = document.querySelectorAll('html /deep/ *')
@@ -39,7 +41,6 @@ var stackElement = function(stack) {
       next(null, state)
     })
   })
-
 
   //Expose a special route for defining elements: 
   //Ex: '/element/my-button'
@@ -136,6 +137,8 @@ var stackElement = function(stack) {
   })
 
   stack.last((state, next) => {
+    //console.log('stack.last runs')
+    //console.log(state.element)
     if(!state.element) return next(null, state) //< Skip if no element established.    
     //Find any instances of the current element in the DOM: 
     var existingDOMelements = document.querySelectorAll(state.element.name)
@@ -149,8 +152,6 @@ var stackElement = function(stack) {
     stack.state.e = null //< Reset any event. 
     next(null, state)      
   })
-
-
 
 }
 
