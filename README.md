@@ -8,7 +8,7 @@
 ```javascript
 var stack = require('stack')
 require('stack-element')(stack) 
-//^ Extends your existing stack with new commands.
+//^ Extends your existing stack with these new commands.
 
 //Define your own custom elements: 
 stack.on('element:my-thingy', (state, next) => {
@@ -40,7 +40,7 @@ The element should exist in the DOM.
   </my-thingy>
 ```
 
-Your stack element listner has access to the entire state object of the application so it can use that data. Stack elements can modify state, but isn't encourated; the idea is that your stack-element listeners should modify the supplied element (state.element). Treating the parent state object as 'read only' and simply tapping into it for the purpose of rendering stuff to the DOM. 
+Your stack element listner has access to the entire state object of the application so it can use that data. Stack elements can modify state, but isn't encouraged; the idea is that your stack-element listeners should modify the supplied element (state.element). Treating the parent state object as 'read only' and simply tapping into it for the purpose of rendering stuff to the DOM. 
 
 
 You can also take advantage of the set of built-in commands the element has: 
