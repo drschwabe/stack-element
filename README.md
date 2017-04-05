@@ -1,5 +1,7 @@
 # Stack Element
 
+(WIP / ALPHA)
+
 ## Usage
 `npm install stack-element`
 

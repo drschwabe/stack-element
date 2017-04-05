@@ -78,15 +78,7 @@ var stackElement = function(stack) {
       class newElement extends HTMLElement  {
         constructor() {
           super()
-
-          this.addEventListener('mouseup', e=> {
-            stack.state.element = element //Set the element. 
-            stack.state.e = e            
-            stack.fire('/element/' + elementName + '/mouseup')            
-          }, {
-            capture: false
-          })        
-
+          
           this.addEventListener('click', e => {
             stack.state.element = element //Set the element. 
             stack.state.e = e
@@ -121,7 +113,7 @@ var stackElement = function(stack) {
 
   //Run an extra command based on the current command, 
   //specifically for a given element: 
-  stack.last((state, next) => {
+  stack.on('*wildcard', (state, next) => {
     //console.log('stack.last() ... attempting to run root command for each element')
     //Skip if the current command has /element/ in it: 
     if(state._command.path.search('/element/') != -1) return next(null, state)
@@ -136,7 +128,7 @@ var stackElement = function(stack) {
     })
   })
 
-  stack.last((state, next) => {
+  stack.on('*wildcard', (state, next) => {
     //console.log('stack.last runs')
     //console.log(state.element)
     if(!state.element) return next(null, state) //< Skip if no element established.    
