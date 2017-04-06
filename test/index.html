@@ -1,19 +1,10 @@
 <html>
   <head>
     <title>Stack Element Test</title>
-    <script src="bundle.js"></script>
-    <script>
-      console.log('anything?')
-      stack.on('/element/my-element/connected', (state, next) => {
-        state.myElementConnected = true
-        console.log('my element connected')
-        next(null, state)
-      })
-      console.log(stack.state)
-    </script>      
   </head>
   <body>
     <h1>This is not a stack element.</h1>
     <my-element>This is a stack element</my-element>  
+    <script src="bundle.js"></script>       
   </body>
 </html>
