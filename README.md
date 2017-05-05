@@ -71,13 +71,13 @@ stack.fire('/element/my-thingy/magic-animation')
 
 The API is the same as stack, just that we prepend the word '/element/' on each command.
 
-### on(string, callback)
+#### on(string, callback)
 
 Prepend the string with 'element:' and then the name of your element.  The element name must have a dash. Callback will run, in the order that it is definied, when fired. 
 In your callback function, call next(null, state) to pass the state to the next object, if you don't do this the stack will finish. 
 
 
-### fire(string, callback) 
+#### fire(string, callback) 
 
 Runs each of the element's listeners (ie- stack.on's) in order. 
 
@@ -86,7 +86,7 @@ There is also a special command to initialize all of your stack elements.
 stack.fire('/element/init/yourprefix') //ie: any elements with the name my-thingy can be initialized with ```/element/init/my```
 
 
-## Supplying a default template
+#### Supplying a default template
 
 You can supply a default template by including it within your element. 
 
