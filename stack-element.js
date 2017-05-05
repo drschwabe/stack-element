@@ -114,7 +114,6 @@ var stackElement = function(stack) {
   //Run an extra command based on the current command, 
   //specifically for a given element: 
   stack.on('*wildcard', (state, next) => {
-    //console.log('stack.last() ... attempting to run root command for each element')
     //Skip if the current command has /element/ in it: 
     if(state._command.path.search('/element/') != -1) return next(null, state)
     var originalPath = state._command.path
@@ -129,8 +128,6 @@ var stackElement = function(stack) {
   })
 
   stack.on('*wildcard', (state, next) => {
-    //console.log('stack.last runs')
-    //console.log(state.element)
     if(!state.element) return next(null, state) //< Skip if no element established.    
     //Find any instances of the current element in the DOM: 
     var existingDOMelements = document.querySelectorAll(state.element.name)

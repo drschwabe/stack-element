@@ -8,12 +8,12 @@
 (requires browser supporting new custom elements spec, ie: Chrome 54+)
 
 ```javascript
-var stack = require('stack')
+var stack = require('stack-core')
 require('stack-element')(stack) 
 //^ Extends your existing stack with these new commands.
 
 //Define your own custom elements: 
-stack.on('element:my-thingy', (state, next) => {
+stack.on('element/my-thingy', (state, next) => {
   //state.element is now a special object containing the custom
   //DOM element 'my-thingy', a base template (plus rendering feature), a set
   //of it's own commands, and a basic API. 
@@ -22,14 +22,14 @@ stack.on('element:my-thingy', (state, next) => {
   next(null, state)
 })
 
-stack.on('element:my-thingy', (state, next) => {
+stack.on('/element/my-thingy', (state, next) => {
   state.element.append('<p>A-OK</p>')
   state.element.addStyle(`background-color { red; }`)
   next(null, state)
 })
 
 //Fire the listeners defined above: 
-stack.fire('element:my-thingy')
+stack.fire('/element/my-thingy')
 //After reaching the bottom of the stack, the element will render the changes to it's template to the DOM. 
 ```
 The element should exist in the DOM. 
@@ -47,12 +47,12 @@ Your stack element listner has access to the entire state object of the applicat
 
 You can also take advantage of the set of built-in commands the element has: 
 ```javascript
-stack.on('element:my-thingy/click', (state, next) => {
+stack.on('/element/my-thingy/click', (state, next) => {
   console.log(state.element.event)
   //Do something here in response to the click. 
   next(null, state)
 })
-stack.on('element:my-thingy/hover', (state, next) => {
+stack.on('/element/my-thingy/hover', (state, next) => {
   state.element.toggleClass('bold')
   next(null, state)
 })
@@ -61,15 +61,15 @@ stack.on('element:my-thingy/hover', (state, next) => {
 You can also define your own commands. 
 
 ```javascript
-stack.on('element:my-thingy/magic-animation', (state, next) => {
+stack.on('/element/my-thingy/magic-animation', (state, next) => {
   //Make the element dance. 
   next(null, state)
 })
 
-stack.fire('element:my-thingy/magic-animation')
+stack.fire('/element/my-thingy/magic-animation')
 ```
 
-The API is the same as stack, just that we prepend the word 'element:' on each command.
+The API is the same as stack, just that we prepend the word '/element/' on each command.
 
 ### on(string, callback)
 
@@ -83,7 +83,7 @@ Runs each of the element's listeners (ie- stack.on's) in order.
 
 There is also a special command to initialize all of your stack elements. 
 
-stack.fire('element:*')
+stack.fire('/element/init/yourprefix') //ie: any elements with the name my-thingy can be initialized with ```/element/init/my```
 
 
 ## Supplying a default template
@@ -94,36 +94,3 @@ You can supply a default template by including it within your element.
 </my-thingy>
 
 
-## Dynamic data via EJS
-
-EJS is the default template language for stack-elements, you can use it as follows: 
-
-```HTML
-<my-thingy>
-  <p><?= state.someString ?></p>
-</my-thingy>
-
-<my-thingy>
-  <ul>
-    <? state.someArray.forEach(function(elem) { ?>
-      <li><?= elem ?><li>
-    <? }) ?>
-  </ul>
-</my-thingy>
-```
-
-You can also nest stack-elements within one another, just note that when performing iterations you will need to bind the iteratee in this way: 
-
-```HTML
-<my-thingy>
-  <div>
-    <? state.someArray.forEach(function(elem) { ?>
-      <my-otherthingy bind="<?= elem ?>">
-        <h1><?= elem ?></h1
-        <h2>State can still be rendered too: </h2>
-        <p><?= state.someThingInteresting ?></p>
-      <my-otherthingy>
-    <? }) ?>
-  </div>
-</my-thingy>
-```
