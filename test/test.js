@@ -2,7 +2,10 @@ var test = require('tape'),
     Nightmare = require('nightmare')
     nightmare = new Nightmare({
       show : true, 
-      alwaysOnTop: false
+      alwaysOnTop: false, 
+      openDevTools: {
+        mode: 'detach'
+      }
     })
     http = require('http'), 
     ecstatic = require('ecstatic'), 
@@ -47,7 +50,7 @@ test("Stack element in a static .html page", (t) => {
   .catch((err) => console.log(err))  
 })
 
-test("Multiple instances stack-elements", (t) => {
+test("Multiple copies of stack-elements", (t) => {
   t.plan(2)
   nightmare
   .goto('http://localhost:8080/test/multiple-elements.html')
@@ -68,12 +71,43 @@ test("Multiple instances stack-elements", (t) => {
       return done(null, results) 
     })    
   })
-  .end()  
   .then((results) => {
     t.equals(results.myElementQuery.length, 2, "There are 2 'my-elements'")
-    t.equals(results.firstElementHTML, results.secondElementHTML, "Two instances of the same element have the same HTML (even though during initial state of the DOM they were different).")
+    t.equals(results.firstElementHTML, results.secondElementHTML, "Two copies of the same element have the same HTML (even though during initial state of the DOM they were different).")
   })
   .catch((err) => console.log(err))  
+})
+
+test("Test stack-element instances", (t) => {
+  t.plan(3)
+  nightmare
+  .goto('http://localhost:8080/test/stack-element.html')
+  .wait(1000)
+  .inject('js', `node_modules/jquery/dist/jquery.js`)
+  .evaluate((done)=> {
+    var results = {}
+    results.stackElementQuery = $('stack-element')
+    stack.on('/element/stack-element/connected', (state, next) => {
+      console.log('stack-element connected')
+      next(null, state)
+    })
+    stack.fire('element/init/stack', (err, state) => {
+      console.log('fired element/init/stack')  
+      results.stackElementQueryPostInit = $('stack-element')
+      results.state = state
+      return done(null, results) 
+    })    
+  })
+  .end()  
+  .then((results) => {
+    //Check that there are two stack elements (pre init): 
+    t.equals(results.stackElementQuery.length, 2, "There are 2 'stack-elements' in the DOM (pre stack-element init)")
+    t.equals(results.state.elements.length, 2, "There are 2 stack-elements in the stack state.")    
+    //Check that there are no stack elements post init (cause they have been renamed stack-element-0, stack-element-1, etc)
+    t.equals(results.stackElementQueryPostInit.length, 0, "There are no 'stack-elements' in the DOM (post stack-element init)")
+    //Check that there is a stack-element-0 and stack-elment-1
+    //Check that the templates are unique: 
+  })
 })
 
 

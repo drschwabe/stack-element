@@ -27,20 +27,40 @@ var stackElement = function(stack) {
       .filter((elem) => elem.localName.indexOf(state._command.prefix + '-') !== -1)
       //convert to just an array of the names: 
       .map((elem) => elem.localName)
-      //remove duplicates: 
-      .uniq()
       .value()
 
+    console.log(targetElems)
+
     //now loop over the names and intit them via stack.fire: 
+
+    var stackElemCount = 0
+    var elementsFired = []
     async.eachSeries(targetElems, (elem, callback) => {
       //Skip any elements that do not have an instance in the DOM: 
       if(!document.querySelectorAll(elem).length) return callback(null)
-      stack.fire('/element/' + elem,  callback)
+      if(elem == 'stack-element') {
+        //if the name of the element is 'stack-element' here we adjust the name to 'stack-element-x' where x is simply a count ie- 1, 2, 3
+        //Find the element and change it's outerHTML: 
+        document.querySelector('stack-element').outerHTML = '<stack-element-' + stackElemCount + '>' + document.querySelector('stack-element').innerHTML + '</stack-element-' + stackElemCount + '>'
+        //TODO: don't ignore attributes
+        elem = 'stack-element-' + stackElemCount
+        stackElemCount++
+      }
+      //Avoid firing a duplicate by pushing it to an array and then checking for matches.... 
+      elementsFired.push(elem)
+      //(could have removed duplicates earlier in one line, but this technique let's us
+      //accommodate for stack-elements which need to be 'de-duplicated' and renamed in place as above)
+      if(_.filter(elementsFired, (firedElem) => firedElem == elem).length == 1) {
+        stack.fire('/element/' + elem,  callback)
+      } else {
+        callback()
+      }
     }, (err) => {
-      if(err) return console.log(err) 
+      if(err) return console.log(err)
       next(null, state)
     })
   })
+
 
   //Expose a special route for defining elements: 
   //Ex: '/element/my-button'
