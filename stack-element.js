@@ -8,7 +8,6 @@ if(!window.customElements) {
 }
 
 var async = require('async'), 
-    $ = require('jquery'), 
     _ = require('underscore')
 
 var stackElement = function(stack) {
@@ -28,8 +27,6 @@ var stackElement = function(stack) {
       //convert to just an array of the names: 
       .map((elem) => elem.localName)
       .value()
-
-    console.log(targetElems)
 
     //now loop over the names and intit them via stack.fire: 
 

@@ -1,12 +1,10 @@
 {
   "name": "stack-element",
-  "version": "0.0.4",
-  "description": "Modular DOM elements that incrementally construct via Stack middleware.",
+  "version": "0.0.5",
+  "description": "Modular DOM elements that incrementally construct via stack middleware.",
   "main": "stack-element.js",
-  "author": "Derrick Schwabe",
   "dependencies": {
     "async": "2.0.1",
-    "jquery": "3.1.1",
     "underscore": "1.8.3",
     "webcomponentsjs-custom-element-v1": "^1.0.0"
   },

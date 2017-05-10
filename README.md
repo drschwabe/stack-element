@@ -22,14 +22,14 @@ stack.on('element/my-thingy', (state, next) => {
   next(null, state)
 })
 
-stack.on('/element/my-thingy', (state, next) => {
+stack.on('element/my-thingy', (state, next) => {
   state.element.append('<p>A-OK</p>')
   state.element.addStyle(`background-color { red; }`)
   next(null, state)
 })
 
 //Fire the listeners defined above: 
-stack.fire('/element/my-thingy')
+stack.fire('element/my-thingy')
 //After reaching the bottom of the stack, the element will render the changes to it's template to the DOM. 
 ```
 The element should exist in the DOM. 
@@ -50,10 +50,6 @@ You can also take advantage of the set of built-in commands the element has:
 stack.on('/element/my-thingy/click', (state, next) => {
   console.log(state.element.event)
   //Do something here in response to the click. 
-  next(null, state)
-})
-stack.on('/element/my-thingy/hover', (state, next) => {
-  state.element.toggleClass('bold')
   next(null, state)
 })
 ```
@@ -94,3 +90,10 @@ You can supply a default template by including it within your element.
 </my-thingy>
 
 
+#### Testing
+Run `npm test` to run the integration test. 
+It will spawn a server on port 8080.  
+If the server doesn't exit cleanly (common when tests fail), use the following (Linux) command to kill it / test again: 
+```
+kill `lsof -t -i:8080`; npm test
+```
