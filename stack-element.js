@@ -95,14 +95,6 @@ var stackElement = function(stack) {
       class newElement extends HTMLElement  {
         constructor() {
           super()
-          
-          this.addEventListener('click', e => {
-            stack.state.element = element //Set the element. 
-            stack.state.e = e
-            stack.fire('/element/' + elementName + '/clicked')
-          }, {
-            capture: false
-          })
           this.name = elementName 
         }
         connectedCallback() {
