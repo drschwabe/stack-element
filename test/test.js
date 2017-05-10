@@ -3,9 +3,7 @@ var test = require('tape'),
     nightmare = new Nightmare({
       show : true, 
       alwaysOnTop: false, 
-      openDevTools: {
-        mode: 'detach'
-      }
+      openDevTools: true
     })
     http = require('http'), 
     ecstatic = require('ecstatic'), 
@@ -98,7 +96,6 @@ test("Test stack-element instances", (t) => {
       return done(null, results) 
     })    
   })
-  .end()  
   .then((results) => {
     //Check that there are two stack elements (pre init): 
     t.equals(results.stackElementQuery.length, 2, "There are 2 'stack-elements' in the DOM (pre stack-element init)")
@@ -110,5 +107,37 @@ test("Test stack-element instances", (t) => {
   })
 })
 
+//Test that /element/my-element/connected only ever connects once
+test("Stack elments only connect once per element.", (t) => {
+  t.plan(2)
+  nightmare
+  .on('console', function(type, msg, errorStack) {
+    console.log(msg)
+    if(errorStack) console.log(errorStack) 
+  })  
+  .goto('http://localhost:8080/test/connected.html')
+  .wait(1000)
+  .inject('js', `node_modules/jquery/dist/jquery.js`)
+  .evaluate((done)=> {
+    var results = {}
+    results.connectedCount = 0
+    stack.on('/element/my-element/connected', (state, next) => {
+      console.log('my element connected')
+      results.connectedCount++
+      next(null, state)
+    })
+    stack.fire('element/init/my', (err, state) => {
+      console.log('fired element/init/my')
+      results.stackState = state 
+      return done(null, results) 
+    })    
+  })
+  .then((results) => {
+    console.log('evaluate results...')
+    console.log(results)
+    t.equals(results.connectedCount, 1)
+  })
+  .catch((err) => console.log(err)) 
+})
 
 test.onFinish(() => server.close())
