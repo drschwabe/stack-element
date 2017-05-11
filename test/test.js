@@ -105,19 +105,17 @@ test("Test stack-element instances", (t) => {
     //Check that there is a stack-element-0 and stack-elment-1
     //Check that the templates are unique: 
   })
+  .catch((err) => console.log(err))    
 })
 
 //Test that /element/my-element/connected only ever connects once
 test("Stack elments only connect once per element.", (t) => {
-  t.plan(2)
+  t.plan(1)
   nightmare
-  .on('console', function(type, msg, errorStack) {
-    console.log(msg)
-    if(errorStack) console.log(errorStack) 
-  })  
   .goto('http://localhost:8080/test/connected.html')
   .wait(1000)
   .inject('js', `node_modules/jquery/dist/jquery.js`)
+  .end()
   .evaluate((done)=> {
     var results = {}
     results.connectedCount = 0
@@ -133,8 +131,6 @@ test("Stack elments only connect once per element.", (t) => {
     })    
   })
   .then((results) => {
-    console.log('evaluate results...')
-    console.log(results)
     t.equals(results.connectedCount, 1)
   })
   .catch((err) => console.log(err)) 

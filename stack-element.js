@@ -1,6 +1,4 @@
 //Stack Element
-console.log('stack element')
-
 
 //Make customElements API available (Chrome54+ ok): 
 if(!window.customElements) {
@@ -116,24 +114,8 @@ var stackElement = function(stack) {
 
     } else {
       state.element = existingElement
-      next(null, state)          
+      next(null, state)
     }
-  })
-
-  //Run an extra command based on the current command, 
-  //specifically for a given element: 
-  stack.on('*wildcard', (state, next) => {
-    //Skip if the current command has /element/ in it: 
-    if(state._command.path.search('/element/') != -1) return next(null, state)
-    var originalPath = state._command.path
-    //For each element, fire the command...
-    async.eachSeries(state.elements, function(element, callback) {
-      var command = '/element/' + element.name + '/on' + originalPath
-      state.element = element
-      stack.fire(command, state, callback)
-    }, function(err) { //Defer and then turn back on the stack.last feature: 
-      next(null, state)    
-    })
   })
 
   stack.on('*wildcard', (state, next) => {
