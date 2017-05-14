@@ -117,22 +117,6 @@ var stackElement = function(stack) {
       next(null, state)
     }
   })
-
-  stack.on('*wildcard', (state, next) => {
-    if(!state.element) return next(null, state) //< Skip if no element established.    
-    //Find any instances of the current element in the DOM: 
-    var existingDOMelements = document.querySelectorAll(state.element.name)
-    existingDOMelements.forEach(function(domElem){
-      //Render by replacing outerHTML with updated template. 
-      if(domElem.hasAttribute('pass') || state.element.pass) return
-      //^ If element has pass attribute, we skip the rendering
-      //(useful if another element is rendering it's content).
-      domElem.outerHTML = state.element.render(state)
-    })
-    stack.state.e = null //< Reset any event. 
-    next(null, state)      
-  })
-
 }
 
 
