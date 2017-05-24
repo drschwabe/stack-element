@@ -1,6 +1,6 @@
 {
   "name": "stack-element",
-  "version": "0.0.5b",
+  "version": "0.0.6",
   "description": "Modular DOM elements that incrementally construct via stack middleware.",
   "main": "stack-element.js",
   "dependencies": {

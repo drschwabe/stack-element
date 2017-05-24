@@ -15,7 +15,7 @@ var stackElement = function(stack) {
     template : ''
   }
 
-  stack.on(['/element/init/:prefix', 'element/init/:prefix'], (state, next) => {
+  stack.on('element/init/:prefix', (state, next) => {
     //For each custom element, initialize them...
     //first, scoop all elements...
     var allElems = document.querySelectorAll('html /deep/ *')
@@ -46,7 +46,7 @@ var stackElement = function(stack) {
       //(could have removed duplicates earlier in one line, but this technique let's us
       //accommodate for stack-elements which need to be 'de-duplicated' and renamed in place as above)
       if(_.filter(elementsFired, (firedElem) => firedElem == elem).length == 1) {
-        stack.fire('/element/' + elem,  callback)
+        stack.fire('element/' + elem,  callback)
       } else {
         callback()
       }
@@ -59,7 +59,7 @@ var stackElement = function(stack) {
 
   //Expose a special route for defining elements: 
   //Ex: '/element/my-button'
-  stack.on('/element/:elementName', (state, next) => {  
+  stack.on('element/:elementName', (state, next) => {  
 
     let elementName = state._command.elementName
 
@@ -78,9 +78,10 @@ var stackElement = function(stack) {
       if(!element.render) element.render = (state) => element.template
 
       //Make a render route available for elements that aren't being auto-rendered: 
-      stack.on('/element/' + elementName + '/render', (state, next) => {
+      stack.on('element/' + elementName + '/render', (state, next) => {
         //Find the elem in the dom, find the corresponding elem in the state, and render/update: 
         state.element = _.findWhere(stack.state.elements, { name : elementName })
+        console.log(elementName)
         document.querySelector(elementName).outerHTML = state.element.render(stack.state)
         next(null, state)
       })
@@ -101,7 +102,7 @@ var stackElement = function(stack) {
           //get the raw innerHTML of the element: 
           element.template = this.outerHTML
           element.connected = true //< flag so this doesn't run again.
-          stack.fire('/element/' + elementName + '/connected', state, function(err, newState) {
+          stack.fire('element/' + elementName + '/connected', state, function(err, newState) {
             next(null, newState)
           })
           //^ so consumers can do stuff to the element after it connects.
